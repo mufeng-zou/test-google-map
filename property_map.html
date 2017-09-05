@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Place searches</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script>
+
+      var map;
+      var infowindow;
+	  var search_types = ['school', 'train_station', 'hospital']
+
+      function initMap() {
+        var thisproperty = {lat: -37.875562, lng: 145.1117573}; 
+
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: thisproperty,
+          zoom: 15
+        });
+		
+		var marker = new google.maps.Marker({
+          map: map,
+          position: new google.maps.LatLng(thisproperty.lat, thisproperty.lng),
+          icon: 'icons/home.png'
+        });
+
+        infowindow = new google.maps.InfoWindow();
+		
+		for (var i = 0; i < search_types.length; i++) {
+		  var service = new google.maps.places.PlacesService(map);
+		  request = {
+            location: thisproperty,
+            radius: 5000,
+			type: search_types[i]
+          } 
+          service.nearbySearch(request, callback);
+		} 
+      }
+
+      function callback(results, status) {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          for (var i = 0; i < results.length; i++) {
+		    var type = search_types[0]
+			for (var j = 1; j < search_types.length; j++) {
+			  if (results[i].types.indexOf(search_types[j]) > -1) type = search_types[j]
+		    } 
+            createMarker(results[i], type);
+          }
+        }
+      }
+
+      function createMarker(place, type) {
+        var placeLoc = place.geometry.location;
+        var marker = new google.maps.Marker({
+          map: map,
+          position: place.geometry.location,
+          icon: 'icons/'+type+'.png'
+        });
+
+        google.maps.event.addListener(marker, 'click', function() {
+          infowindow.setContent(place.name);
+          infowindow.open(map, this);
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div id="map"></div>
+      // This example requires the Places library. Include the libraries=places
+      // parameter when you first load the API. For example:
+      // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
+	  // replace YOUR_API_KEY below with your own key
+	  
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap" async defer></script>
+  </body>
+</html>
